@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
-	"github.com/immesys/bw2bind"
+	bw "gopkg.in/immesys/bw2bind.v5"
 )
 
 func main() {
 	//Connect
-	cl := bw2bind.ConnectOrExit("")
+	cl := bw.ConnectOrExit("")
 	cl.SetEntityFromEnvironOrExit()
 
 	uri := os.Getenv("BASEURI")
@@ -22,24 +23,24 @@ func main() {
 	if os.Getenv("DESC") != "" {
 		svc.SetMetadata("description", os.Getenv("DESC"))
 	}
-	iface := svc.RegisterInterface("all", "i.top")
-	hostname, _ := os.Hostname()
-	iface.PublishSignal("hostname", []bw2bind.PayloadObject{
-		bw2bind.CreateTextPayloadObject(bw2bind.PONumText,
-			hostname),
-	})
+	iface := svc.RegisterInterface("pantry", "i.top")
 
 	for {
 		usedC, totalC := getCpuUsage()
 		cpuPercentage := float64(usedC) / float64(totalC) * 100.0
-		cpo := bw2bind.CreateTextPayloadObject(bw2bind.PONumText,
-			fmt.Sprintf("%.2f %%", cpuPercentage))
-		iface.PublishSignal("cpu", []bw2bind.PayloadObject{cpo})
+		cpo, _ := bw.CreateMsgPackPayloadObject(bw.FromDotForm(bw.PODFMsgPack), map[string]interface{}{"cpu": cpuPercentage})
+		err := iface.PublishSignal("cpu", cpo)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		usedM, totalM := getMemUsage()
-		mpo := bw2bind.CreateTextPayloadObject(bw2bind.PONumText,
-			fmt.Sprintf("%d / %d MB", usedM/1024/1024, totalM/1024/1024))
-		iface.PublishSignal("mem", []bw2bind.PayloadObject{mpo})
+		mpo, _ := bw.CreateMsgPackPayloadObject(bw.FromDotForm(bw.PODFMsgPack), map[string]interface{}{"used": usedM / 1024 / 1024, "total": totalM / 1024 / 1024})
+		err = iface.PublishSignal("mem", mpo)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("cpu %v mem %v\n", cpuPercentage, usedM/1024/1024)
 
 		time.Sleep(3 * time.Second)
 	}
