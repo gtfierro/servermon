@@ -26,9 +26,8 @@ func main() {
 		svc.SetMetadata("description", os.Getenv("DESC"))
 	}
 	iface := svc.RegisterInterface("pantry", "i.top")
-	fmt.Println(iface.SignalURI("cpu"))
-	cl.SetMetadata(iface.SignalURI("cpu"), "SourceName", "top")
-	cl.SetMetadata(iface.SignalURI("mem"), "SourceName", "top")
+	cl.SetMetadata(iface.FullURI(), "SourceName", "top")
+	cl.SetMetadata(iface.FullURI(), "Computer", "pantry.cs")
 
 	cl.SetMetadata(iface.SignalURI("cpu"), "UnitofMeasure", "CPU")
 	cl.SetMetadata(iface.SignalURI("mem"), "UnitofMeasure", "MEM")
