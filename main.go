@@ -41,14 +41,14 @@ func main() {
 		cpo, _ := bw.CreateMsgPackPayloadObject(bw.FromDotForm(bw.PODFMsgPack), map[string]interface{}{"cpu": cpuPercentage})
 		err = iface.PublishSignal("cpu", cpo)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		memstat, err := mem.VirtualMemory()
 		mpo, _ := bw.CreateMsgPackPayloadObject(bw.FromDotForm(bw.PODFMsgPack), map[string]interface{}{"used": memstat.UsedPercent})
 		err = iface.PublishSignal("mem", mpo)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		log.Printf("cpu %v mem %v\n", cpuPercentage, memstat.UsedPercent)
 
